@@ -1,13 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import React from "react";
+import Navbar from "@/components/landing/Navbar";
+import Hero from "@/components/landing/Hero";
+import Features from "@/components/landing/Features";
+import Footer from "@/components/landing/Footer";
+import { Helmet } from "react-helmet-async";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <>
+      <Helmet>
+        <title>UniChat - Unified Telegram & Discord Chat with AI</title>
+        <meta
+          name="description"
+          content="Unify your Telegram and Discord conversations with AI-powered message analysis, summarization, and smart response generation."
+        />
+      </Helmet>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main>
+          <Hero />
+          <Features />
+        </main>
+        <Footer />
       </div>
-    </div>
+    </>
   );
 };
 
