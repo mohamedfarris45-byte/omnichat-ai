@@ -45,9 +45,9 @@ const ChatView = ({ chatId, platform, messages, onSendMessage, onOpenAI }: ChatV
               )}
             >
               {platform === "telegram" ? (
-                <TelegramIcon className="w-2.5 h-2.5 text-primary-foreground" />
+                <TelegramIcon className="w-2.5 h-2.5 text-white" />
               ) : (
-                <DiscordIcon className="w-2.5 h-2.5 text-foreground" />
+                <DiscordIcon className="w-2.5 h-2.5 text-white" />
               )}
             </div>
           </div>

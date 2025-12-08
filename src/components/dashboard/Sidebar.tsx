@@ -1,105 +1,60 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { TelegramIcon, DiscordIcon, AISparkleIcon } from "@/components/icons/PlatformIcons";
-import { Home, MessageSquare, Settings, Users, Brain } from "lucide-react";
+import { Home, Brain, Settings, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
-interface SidebarProps {
-  activePlatform: "telegram" | "discord" | "all";
-  onPlatformChange: (platform: "telegram" | "discord" | "all") => void;
-}
-
-const Sidebar = ({ activePlatform, onPlatformChange }: SidebarProps) => {
+const Sidebar = () => {
   const navItems = [
-    { icon: Home, label: "Overview", href: "/dashboard" },
-    { icon: MessageSquare, label: "All Chats", href: "/dashboard" },
+    { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: Brain, label: "AI Insights", href: "/dashboard" },
-    { icon: Users, label: "Contacts", href: "/dashboard" },
     { icon: Settings, label: "Settings", href: "/dashboard" },
+    { icon: HelpCircle, label: "Help", href: "/dashboard" },
   ];
 
   return (
-    <aside className="w-72 h-screen bg-sidebar border-r border-sidebar-border flex flex-col">
+    <aside className="w-20 h-screen bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4">
       {/* Logo */}
-      <div className="p-4 border-b border-sidebar-border">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-            <AISparkleIcon className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold text-sidebar-foreground">UniChat</span>
-        </Link>
-      </div>
+      <Link to="/" className="mb-8">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+          <AISparkleIcon className="w-6 h-6 text-primary-foreground" />
+        </div>
+      </Link>
 
-      {/* Platform Selector */}
-      <div className="p-4 border-b border-sidebar-border">
-        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Platforms</p>
-        <div className="flex flex-col gap-2">
-          <button
-            onClick={() => onPlatformChange("all")}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-              activePlatform === "all"
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-muted-foreground hover:bg-sidebar-accent/50"
-            )}
-          >
-            <MessageSquare className="w-5 h-5" />
-            <span className="text-sm font-medium">All Messages</span>
-          </button>
-          <button
-            onClick={() => onPlatformChange("telegram")}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-              activePlatform === "telegram"
-                ? "bg-telegram/20 text-telegram border border-telegram/30"
-                : "text-muted-foreground hover:bg-sidebar-accent/50"
-            )}
-          >
-            <TelegramIcon className="w-5 h-5" />
-            <span className="text-sm font-medium">Telegram</span>
-          </button>
-          <button
-            onClick={() => onPlatformChange("discord")}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-              activePlatform === "discord"
-                ? "bg-discord/20 text-discord border border-discord/30"
-                : "text-muted-foreground hover:bg-sidebar-accent/50"
-            )}
-          >
-            <DiscordIcon className="w-5 h-5" />
-            <span className="text-sm font-medium">Discord</span>
-          </button>
+      {/* Platform Icons */}
+      <div className="flex flex-col gap-3 mb-8">
+        <div className="w-12 h-12 rounded-xl bg-telegram/10 flex items-center justify-center border border-telegram/20 hover:bg-telegram/20 transition-colors cursor-pointer">
+          <TelegramIcon className="w-6 h-6 text-telegram" />
+        </div>
+        <div className="w-12 h-12 rounded-xl bg-discord/10 flex items-center justify-center border border-discord/20 hover:bg-discord/20 transition-colors cursor-pointer">
+          <DiscordIcon className="w-6 h-6 text-discord" />
         </div>
       </div>
+
+      {/* Separator */}
+      <div className="w-8 h-px bg-border mb-6" />
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Menu</p>
-        <div className="flex flex-col gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all"
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-sm font-medium">{item.label}</span>
-            </Link>
-          ))}
-        </div>
+      <nav className="flex-1 flex flex-col gap-2">
+        {navItems.map((item) => (
+          <Link
+            key={item.label}
+            to={item.href}
+            className="w-12 h-12 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all group relative"
+            title={item.label}
+          >
+            <item.icon className="w-5 h-5" />
+            <span className="absolute left-full ml-3 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {item.label}
+            </span>
+          </Link>
+        ))}
       </nav>
 
-      {/* User */}
-      <div className="p-4 border-t border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-            <span className="text-sm font-semibold text-primary-foreground">U</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">User Name</p>
-            <p className="text-xs text-muted-foreground truncate">user@email.com</p>
-          </div>
+      {/* User Avatar */}
+      <div className="mt-auto">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center cursor-pointer hover:scale-105 transition-transform">
+          <span className="text-sm font-semibold text-primary-foreground">U</span>
         </div>
       </div>
     </aside>

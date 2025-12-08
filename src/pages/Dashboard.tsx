@@ -5,7 +5,7 @@ import ChatView from "@/components/dashboard/ChatView";
 import AIPanel from "@/components/dashboard/AIPanel";
 import { Helmet } from "react-helmet-async";
 
-// Mock data
+// Mock data - unified list from both platforms
 const mockChats = [
   {
     id: "1",
@@ -58,7 +58,6 @@ const mockMessages = [
 ];
 
 const Dashboard = () => {
-  const [activePlatform, setActivePlatform] = useState<"telegram" | "discord" | "all">("all");
   const [activeChat, setActiveChat] = useState<string | null>("1");
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
   const [messages, setMessages] = useState(mockMessages);
@@ -82,12 +81,11 @@ const Dashboard = () => {
         <meta name="description" content="Manage your unified conversations from Telegram and Discord with AI assistance." />
       </Helmet>
       <div className="h-screen flex bg-background overflow-hidden">
-        <Sidebar activePlatform={activePlatform} onPlatformChange={setActivePlatform} />
+        <Sidebar />
         <ChatList
           chats={mockChats}
           activeChat={activeChat}
           onChatSelect={setActiveChat}
-          filter={activePlatform}
         />
         {activeChat && selectedChat ? (
           <ChatView
