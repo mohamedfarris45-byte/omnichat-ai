@@ -5,7 +5,19 @@ import ChatView from "@/components/dashboard/ChatView";
 import AIPanel from "@/components/dashboard/AIPanel";
 import { Helmet } from "react-helmet-async";
 
-// Mock data - unified list from both platforms
+// Mock data - unified messages from both platforms
+const mockMessages = [
+  { id: "1", content: "Hey! How's the project going?", sender: "other" as const, time: "10:30 AM", platform: "telegram" as const },
+  { id: "2", content: "Going well! Just finished the design phase.", sender: "user" as const, time: "10:32 AM", platform: "telegram" as const },
+  { id: "3", content: "Nice work on the designs! 🎨", sender: "other" as const, time: "10:33 AM", platform: "discord" as const },
+  { id: "4", content: "Thanks! The team really came together on this one.", sender: "user" as const, time: "10:35 AM", platform: "discord" as const },
+  { id: "5", content: "Can you send me the project files?", sender: "other" as const, time: "10:36 AM", platform: "telegram" as const },
+  { id: "6", content: "Sure, I'll package them up and send shortly.", sender: "user" as const, time: "10:38 AM", platform: "telegram" as const },
+  { id: "7", content: "Also, do we have the meeting confirmed for tomorrow?", sender: "other" as const, time: "10:40 AM", platform: "discord" as const },
+  { id: "8", content: "Yes! 3 PM works for everyone.", sender: "user" as const, time: "10:42 AM", platform: "discord" as const },
+];
+
+// Mock chats for the sidebar
 const mockChats = [
   {
     id: "1",
@@ -49,14 +61,6 @@ const mockChats = [
   },
 ];
 
-const mockMessages = [
-  { id: "1", content: "Hey! How's the project going?", sender: "other" as const, time: "10:30 AM" },
-  { id: "2", content: "Going well! Just finished the design phase.", sender: "user" as const, time: "10:32 AM" },
-  { id: "3", content: "That's great! Can you send me the project files?", sender: "other" as const, time: "10:33 AM" },
-  { id: "4", content: "Sure, I'll package them up and send shortly.", sender: "user" as const, time: "10:35 AM" },
-  { id: "5", content: "Perfect! Also, do we have the meeting confirmed for tomorrow?", sender: "other" as const, time: "10:36 AM" },
-];
-
 const Dashboard = () => {
   const [activeChat, setActiveChat] = useState<string | null>("1");
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
@@ -68,11 +72,10 @@ const Dashboard = () => {
       content,
       sender: "user" as const,
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      platform: "telegram" as const, // Default to telegram for user messages
     };
     setMessages([...messages, newMessage]);
   };
-
-  const selectedChat = mockChats.find((c) => c.id === activeChat);
 
   return (
     <>
@@ -87,19 +90,11 @@ const Dashboard = () => {
           activeChat={activeChat}
           onChatSelect={setActiveChat}
         />
-        {activeChat && selectedChat ? (
-          <ChatView
-            chatId={activeChat}
-            platform={selectedChat.platform}
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            onOpenAI={() => setIsAIPanelOpen(true)}
-          />
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            Select a conversation to start chatting
-          </div>
-        )}
+        <ChatView
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          onOpenAI={() => setIsAIPanelOpen(true)}
+        />
         <AIPanel
           isOpen={isAIPanelOpen}
           onClose={() => setIsAIPanelOpen(false)}

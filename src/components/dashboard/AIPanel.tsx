@@ -11,12 +11,14 @@ interface AIPanelProps {
 }
 
 type AIMode = "analyze" | "summarize" | "generate";
+type ToneOption = "professional" | "casual" | "detailed";
 
 const AIPanel = ({ isOpen, onClose, onGenerateMessage }: AIPanelProps) => {
-  const [mode, setMode] = useState<AIMode>("analyze");
+  const [mode, setMode] = useState<AIMode>("generate");
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [selectedTone, setSelectedTone] = useState<ToneOption | null>(null);
 
   const modes = [
     { id: "analyze" as AIMode, icon: Brain, label: "Analyze" },
@@ -24,9 +26,20 @@ const AIPanel = ({ isOpen, onClose, onGenerateMessage }: AIPanelProps) => {
     { id: "generate" as AIMode, icon: MessageSquarePlus, label: "Generate" },
   ];
 
+  const toneOptions: { id: ToneOption; label: string; description: string }[] = [
+    { id: "professional", label: "Professional", description: "Formal and business-appropriate" },
+    { id: "casual", label: "Casual", description: "Friendly and relaxed" },
+    { id: "detailed", label: "Detailed", description: "Comprehensive and thorough" },
+  ];
+
+  const generatedResponses: Record<ToneOption, string> = {
+    professional: "Thank you for the update. I will review the documents thoroughly and provide my feedback by end of business tomorrow. Please let me know if you need anything else in the meantime.",
+    casual: "Sounds good! Let me take a look at those files and I'll get back to you soon. Thanks for sending them over! 👍",
+    detailed: "I appreciate you sharing these materials. I'll go through each document carefully, paying particular attention to the project timeline, budget allocations, and the proposed design mockups. I expect to have comprehensive feedback ready by tomorrow afternoon, and I'll schedule a follow-up call if any clarifications are needed.",
+  };
+
   const handleProcess = () => {
     setIsProcessing(true);
-    // Simulate AI processing
     setTimeout(() => {
       if (mode === "analyze") {
         setResult(
@@ -36,13 +49,18 @@ const AIPanel = ({ isOpen, onClose, onGenerateMessage }: AIPanelProps) => {
         setResult(
           "**Conversation Summary:**\n\nAlex discussed the project timeline and requested a meeting next week. The main points were:\n\n1. Phase 1 completion expected by Friday\n2. Need to review design mockups\n3. Budget approval pending\n\nAction items: Schedule review meeting, prepare presentation."
         );
-      } else {
-        setResult(
-          "Here are 3 suggested responses:\n\n**Professional:**\n\"Thanks for the update! I'll review the documents and get back to you by EOD tomorrow.\"\n\n**Casual:**\n\"Sounds good! Let me take a look and we can sync up later.\"\n\n**Detailed:**\n\"I appreciate you sharing this. I'll thoroughly review the materials and prepare my feedback for our next meeting.\""
-        );
       }
       setIsProcessing(false);
     }, 1500);
+  };
+
+  const handleToneSelect = (tone: ToneOption) => {
+    setSelectedTone(tone);
+    setIsProcessing(true);
+    setTimeout(() => {
+      setResult(generatedResponses[tone]);
+      setIsProcessing(false);
+    }, 800);
   };
 
   const handleCopy = () => {
@@ -51,6 +69,17 @@ const AIPanel = ({ isOpen, onClose, onGenerateMessage }: AIPanelProps) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleUseResponse = () => {
+    if (result) {
+      onGenerateMessage(result);
+    }
+  };
+
+  const handleReset = () => {
+    setResult(null);
+    setSelectedTone(null);
   };
 
   if (!isOpen) return null;
@@ -78,7 +107,7 @@ const AIPanel = ({ isOpen, onClose, onGenerateMessage }: AIPanelProps) => {
               key={m.id}
               onClick={() => {
                 setMode(m.id);
-                setResult(null);
+                handleReset();
               }}
               className={cn(
                 "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
@@ -96,76 +125,141 @@ const AIPanel = ({ isOpen, onClose, onGenerateMessage }: AIPanelProps) => {
 
       {/* Content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        {!result ? (
+        {mode === "generate" ? (
           <div className="space-y-4">
-            <div className="glass rounded-xl p-4">
-              <p className="text-sm text-muted-foreground mb-3">
-                {mode === "analyze" && "Analyze the current conversation for sentiment, topics, and insights."}
-                {mode === "summarize" && "Get a concise summary of the conversation with key points and action items."}
-                {mode === "generate" && "Generate contextual response suggestions based on the conversation."}
-              </p>
-              <Button
-                variant="hero"
-                className="w-full"
-                onClick={handleProcess}
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <AISparkleIcon className="w-4 h-4" />
-                    {mode === "analyze" && "Analyze Conversation"}
-                    {mode === "summarize" && "Summarize Messages"}
-                    {mode === "generate" && "Generate Responses"}
-                  </>
-                )}
-              </Button>
-            </div>
+            {!result ? (
+              <>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Choose a tone for your AI-generated response:
+                </p>
+                <div className="space-y-3">
+                  {toneOptions.map((tone) => (
+                    <button
+                      key={tone.id}
+                      onClick={() => handleToneSelect(tone.id)}
+                      disabled={isProcessing}
+                      className={cn(
+                        "w-full p-4 rounded-xl border-2 text-left transition-all",
+                        selectedTone === tone.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50 bg-muted/50",
+                        isProcessing && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{tone.label}</span>
+                        {isProcessing && selectedTone === tone.id && (
+                          <RefreshCw className="w-4 h-4 animate-spin text-primary" />
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">{tone.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div className="glass rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium capitalize">{selectedTone} Response</span>
+                    <Button variant="ghost" size="sm" onClick={handleCopy}>
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <div className="text-sm whitespace-pre-wrap">{result}</div>
+                </div>
+                
+                {/* Tone Quick Switch */}
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Try another tone</p>
+                  <div className="flex gap-2">
+                    {toneOptions.map((tone) => (
+                      <Button
+                        key={tone.id}
+                        variant={selectedTone === tone.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleToneSelect(tone.id)}
+                        disabled={isProcessing}
+                        className="flex-1"
+                      >
+                        {tone.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Tips */}
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Tips</p>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>• Select messages to focus the analysis</p>
-                <p>• Use keyboard shortcuts for quick access</p>
-                <p>• Generated responses can be customized</p>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleReset}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Reset
+                  </Button>
+                  <Button
+                    variant="default"
+                    className="flex-1"
+                    onClick={handleUseResponse}
+                  >
+                    Use Response
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
+          /* Analyze & Summarize modes */
           <div className="space-y-4">
-            <div className="glass rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium">Result</span>
-                <Button variant="ghost" size="sm" onClick={handleCopy}>
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {!result ? (
+              <div className="space-y-4">
+                <div className="glass rounded-xl p-4">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {mode === "analyze" && "Analyze the current conversation for sentiment, topics, and insights."}
+                    {mode === "summarize" && "Get a concise summary of the conversation with key points and action items."}
+                  </p>
+                  <Button
+                    variant="hero"
+                    className="w-full"
+                    onClick={handleProcess}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <AISparkleIcon className="w-4 h-4" />
+                        {mode === "analyze" && "Analyze Conversation"}
+                        {mode === "summarize" && "Summarize Messages"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="glass rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium">Result</span>
+                    <Button variant="ghost" size="sm" onClick={handleCopy}>
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <div className="text-sm whitespace-pre-wrap">{result}</div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleReset}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Try Again
                 </Button>
               </div>
-              <div className="text-sm whitespace-pre-wrap">{result}</div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setResult(null)}
-              >
-                <RefreshCw className="w-4 h-4" />
-                Retry
-              </Button>
-              {mode === "generate" && (
-                <Button
-                  variant="default"
-                  className="flex-1"
-                  onClick={() => onGenerateMessage("Thanks for the update! I'll review and get back to you.")}
-                >
-                  Use Response
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         )}
       </div>
