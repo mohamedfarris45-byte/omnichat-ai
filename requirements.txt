@@ -1,0 +1,6 @@
+streamlit>=1.24.0
+# add other Python packages your app needs, e.g.:
+# openai
+# pandas
+# scikit-learn
+# End of file
