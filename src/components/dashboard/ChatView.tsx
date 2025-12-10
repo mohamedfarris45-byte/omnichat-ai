@@ -9,17 +9,16 @@ interface Message {
   content: string;
   sender: "user" | "other";
   time: string;
+  platform: "telegram" | "discord";
 }
 
 interface ChatViewProps {
-  chatId: string;
-  platform: "telegram" | "discord";
   messages: Message[];
   onSendMessage: (message: string) => void;
   onOpenAI: () => void;
 }
 
-const ChatView = ({ chatId, platform, messages, onSendMessage, onOpenAI }: ChatViewProps) => {
+const ChatView = ({ messages, onSendMessage, onOpenAI }: ChatViewProps) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleSend = () => {
@@ -36,24 +35,16 @@ const ChatView = ({ chatId, platform, messages, onSendMessage, onOpenAI }: ChatV
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-              <span className="font-semibold">A</span>
-            </div>
-            <div
-              className={cn(
-                "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center",
-                platform === "telegram" ? "bg-telegram" : "bg-discord"
-              )}
-            >
-              {platform === "telegram" ? (
-                <TelegramIcon className="w-2.5 h-2.5 text-white" />
-              ) : (
-                <DiscordIcon className="w-2.5 h-2.5 text-white" />
-              )}
+              <span className="font-semibold">All</span>
             </div>
           </div>
           <div>
-            <p className="font-medium">Alex Johnson</p>
-            <p className="text-xs text-muted-foreground">Online</p>
+            <p className="font-medium">Unified Chat</p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <TelegramIcon className="w-3 h-3 text-telegram" />
+              <DiscordIcon className="w-3 h-3 text-discord" />
+              <span>All platforms</span>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -79,23 +70,63 @@ const ChatView = ({ chatId, platform, messages, onSendMessage, onOpenAI }: ChatV
               msg.sender === "user" ? "justify-end" : "justify-start"
             )}
           >
-            <div
-              className={cn(
-                "max-w-[70%] rounded-2xl px-4 py-2.5",
-                msg.sender === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-sm"
-                  : "bg-muted rounded-bl-sm"
+            <div className="flex items-end gap-2 max-w-[70%]">
+              {msg.sender === "other" && (
+                <div
+                  className={cn(
+                    "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
+                    msg.platform === "telegram" ? "bg-telegram" : "bg-discord"
+                  )}
+                >
+                  {msg.platform === "telegram" ? (
+                    <TelegramIcon className="w-3.5 h-3.5 text-white" />
+                  ) : (
+                    <DiscordIcon className="w-3.5 h-3.5 text-white" />
+                  )}
+                </div>
               )}
-            >
-              <p className="text-sm">{msg.content}</p>
-              <p
+              <div
                 className={cn(
-                  "text-xs mt-1",
-                  msg.sender === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
+                  "rounded-2xl px-4 py-2.5",
+                  msg.sender === "user"
+                    ? "bg-primary text-primary-foreground rounded-br-sm"
+                    : "bg-muted rounded-bl-sm"
                 )}
               >
-                {msg.time}
-              </p>
+                <p className="text-sm">{msg.content}</p>
+                <div className={cn(
+                  "flex items-center gap-1.5 mt-1",
+                  msg.sender === "user" ? "justify-end" : "justify-start"
+                )}>
+                  {msg.sender === "other" && (
+                    <span className="text-xs font-medium capitalize text-muted-foreground">
+                      {msg.platform}
+                    </span>
+                  )}
+                  <p
+                    className={cn(
+                      "text-xs",
+                      msg.sender === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
+                    )}
+                  >
+                    {msg.time}
+                  </p>
+                </div>
+              </div>
+              {msg.sender === "user" && (
+                <div
+                  className={cn(
+                    "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
+                    msg.platform === "telegram" ? "bg-telegram" : "bg-discord"
+                  )}
+                >
+                  {msg.platform === "telegram" ? (
+                    <TelegramIcon className="w-3.5 h-3.5 text-white" />
+                  ) : (
+                    <DiscordIcon className="w-3.5 h-3.5 text-white" />
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}
