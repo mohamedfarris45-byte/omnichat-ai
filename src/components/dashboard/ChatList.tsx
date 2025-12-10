@@ -22,9 +22,18 @@ interface ChatListProps {
 const ChatList = ({ chats, activeChat, onChatSelect }: ChatListProps) => {
   return (
     <div className="w-80 h-full bg-card border-r border-border flex flex-col shadow-sm">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <h2 className="text-lg font-semibold text-foreground mb-3">Messages</h2>
+      {/* Unified Chat Header */}
+      <div className="p-4 border-b border-border bg-gradient-to-r from-primary/5 to-secondary/5">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+            <TelegramIcon className="w-3 h-3 text-white absolute -translate-x-1" />
+            <DiscordIcon className="w-3 h-3 text-white absolute translate-x-1" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Unified Chat</h2>
+            <p className="text-xs text-muted-foreground">All platforms connected</p>
+          </div>
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
