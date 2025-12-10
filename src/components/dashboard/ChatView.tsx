@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { TelegramIcon, DiscordIcon, AISparkleIcon } from "@/components/icons/PlatformIcons";
 import { Button } from "@/components/ui/button";
-import { Send, Paperclip, Smile, MoreVertical, Phone, Video } from "lucide-react";
+import { Send, Paperclip, Smile, MoreVertical, Phone, Video, X, Reply } from "lucide-react";
 
 interface Message {
   id: string;
@@ -10,21 +10,31 @@ interface Message {
   sender: "user" | "other";
   time: string;
   platform: "telegram" | "discord";
+  senderName?: string;
 }
 
 interface ChatViewProps {
+  chatName: string;
   messages: Message[];
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, replyTo?: Message) => void;
   onOpenAI: () => void;
 }
 
-const ChatView = ({ messages, onSendMessage, onOpenAI }: ChatViewProps) => {
+const ChatView = ({ chatName, messages, onSendMessage, onOpenAI }: ChatViewProps) => {
   const [inputValue, setInputValue] = useState("");
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
   const handleSend = () => {
     if (inputValue.trim()) {
-      onSendMessage(inputValue);
+      onSendMessage(inputValue, replyingTo || undefined);
       setInputValue("");
+      setReplyingTo(null);
+    }
+  };
+
+  const handleMessageClick = (message: Message) => {
+    if (message.sender === "other") {
+      setReplyingTo(message);
     }
   };
 
@@ -35,15 +45,15 @@ const ChatView = ({ messages, onSendMessage, onOpenAI }: ChatViewProps) => {
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-              <span className="font-semibold">All</span>
+              <span className="font-semibold">{chatName[0]}</span>
             </div>
           </div>
           <div>
-            <p className="font-medium">Unified Chat</p>
+            <p className="font-medium">{chatName}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <TelegramIcon className="w-3 h-3 text-telegram" />
               <DiscordIcon className="w-3 h-3 text-discord" />
-              <span>All platforms</span>
+              <span>Unified Chat</span>
             </div>
           </div>
         </div>
@@ -70,7 +80,13 @@ const ChatView = ({ messages, onSendMessage, onOpenAI }: ChatViewProps) => {
               msg.sender === "user" ? "justify-end" : "justify-start"
             )}
           >
-            <div className="flex items-end gap-2 max-w-[70%]">
+            <div 
+              className={cn(
+                "flex items-end gap-2 max-w-[70%]",
+                msg.sender === "other" && "cursor-pointer group"
+              )}
+              onClick={() => handleMessageClick(msg)}
+            >
               {msg.sender === "other" && (
                 <div
                   className={cn(
@@ -85,32 +101,43 @@ const ChatView = ({ messages, onSendMessage, onOpenAI }: ChatViewProps) => {
                   )}
                 </div>
               )}
-              <div
-                className={cn(
-                  "rounded-2xl px-4 py-2.5",
-                  msg.sender === "user"
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-muted rounded-bl-sm"
+              <div className="relative">
+                {/* Reply indicator on hover */}
+                {msg.sender === "other" && (
+                  <div className="absolute -right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Reply className="w-4 h-4 text-muted-foreground" />
+                  </div>
                 )}
-              >
-                <p className="text-sm">{msg.content}</p>
-                <div className={cn(
-                  "flex items-center gap-1.5 mt-1",
-                  msg.sender === "user" ? "justify-end" : "justify-start"
-                )}>
-                  {msg.sender === "other" && (
-                    <span className="text-xs font-medium capitalize text-muted-foreground">
-                      {msg.platform}
-                    </span>
+                <div
+                  className={cn(
+                    "rounded-2xl px-4 py-2.5 transition-all",
+                    msg.sender === "user"
+                      ? "bg-primary text-primary-foreground rounded-br-sm"
+                      : "bg-muted rounded-bl-sm group-hover:bg-muted/80 group-hover:ring-2 group-hover:ring-primary/30"
                   )}
-                  <p
-                    className={cn(
-                      "text-xs",
-                      msg.sender === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
+                >
+                  {msg.senderName && msg.sender === "other" && (
+                    <p className="text-xs font-medium text-primary mb-1">{msg.senderName}</p>
+                  )}
+                  <p className="text-sm">{msg.content}</p>
+                  <div className={cn(
+                    "flex items-center gap-1.5 mt-1",
+                    msg.sender === "user" ? "justify-end" : "justify-start"
+                  )}>
+                    {msg.sender === "other" && (
+                      <span className="text-xs font-medium capitalize text-muted-foreground">
+                        {msg.platform}
+                      </span>
                     )}
-                  >
-                    {msg.time}
-                  </p>
+                    <p
+                      className={cn(
+                        "text-xs",
+                        msg.sender === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
+                      )}
+                    >
+                      {msg.time}
+                    </p>
+                  </div>
                 </div>
               </div>
               {msg.sender === "user" && (
@@ -132,6 +159,22 @@ const ChatView = ({ messages, onSendMessage, onOpenAI }: ChatViewProps) => {
         ))}
       </div>
 
+      {/* Reply Preview */}
+      {replyingTo && (
+        <div className="px-4 py-2 bg-muted/50 border-t border-border flex items-center gap-3">
+          <div className="w-1 h-10 rounded-full bg-primary"></div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-primary">
+              Replying to {replyingTo.senderName || "message"}
+            </p>
+            <p className="text-sm text-muted-foreground truncate">{replyingTo.content}</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => setReplyingTo(null)}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Input */}
       <div className="p-4 border-t border-border bg-card/50">
         <div className="flex items-center gap-3">
@@ -144,7 +187,7 @@ const ChatView = ({ messages, onSendMessage, onOpenAI }: ChatViewProps) => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Type a message..."
+              placeholder={replyingTo ? "Type your reply..." : "Type a message..."}
               className="w-full h-11 px-4 rounded-xl bg-muted border-0 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2">
